@@ -1,0 +1,4 @@
+app_identifier("com.ravikiran.nyayasetu")
+apple_id("ravikiranmentorites@gmail.com")
+itc_team_name("Ravi Kiran")  # Update this to your exact App Store Connect team name if different
+team_name("Ravi Kiran")      # Update this to your exact Apple Developer team name if different

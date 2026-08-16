@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+    
+    // Helper function to check if user is the lawyer for a booking
+    function isLawyerForBooking(bookingId) {
+      return exists(/databases/$(database)/documents/lawyers/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/advocateBookings/$(bookingId)).data.lawyerId == request.auth.uid;
+    }
+    
+    // Helper function to check if user owns a matter
+    function isMatterOwner(matterId) {
+      return get(/databases/$(database)/documents/legalMatters/$(matterId)).data.ownerUserId == request.auth.uid;
+    }
+    
+    // Lawyers collection
+    match /lawyers/{lawyerId} {
+      // Public read access for active lawyers only
+      allow read: if resource.data.status == 'active';
+      
+      // Write access only for admins
+      allow write: if isAdmin();
+    }
+    
+    // Advocate bookings collection
+    match /advocateBookings/{bookingId} {
+      // Read if user is the client or the lawyer
+      allow read: if isAuthenticated() && 
+                     (resource.data.clientUserId == request.auth.uid || 
+                      resource.data.lawyerId == request.auth.uid);
+      
+      // Write if user is the client or the lawyer
+      allow write: if isAuthenticated() && 
+                      (resource.data.clientUserId == request.auth.uid || 
+                       resource.data.lawyerId == request.auth.uid);
+      
+      // Create allowed for any authenticated user
+      allow create: if isAuthenticated();
+    }
+    
+    // Legal matters collection
+    match /legalMatters/{matterId} {
+      // Read only if user is owner or assigned lawyer
+      allow read: if isAuthenticated() && 
+                     (resource.data.ownerUserId == request.auth.uid || 
+                      resource.data.lawyerId == request.auth.uid);
+      
+      // Write only if user is owner or assigned lawyer
+      allow write: if isAuthenticated() && 
+                      (resource.data.ownerUserId == request.auth.uid || 
+                       resource.data.lawyerId == request.auth.uid);
+    }
+    
+    // Matter records collection
+    match /matterRecords/{recordId} {
+      // Read/write if authenticated user owns the parent matter
+      allow read, write: if isAuthenticated() && 
+                            (get(/databases/$(database)/documents/legalMatters/$(resource.data.matterId)).data.ownerUserId == request.auth.uid ||
+                             get(/databases/$(database)/documents/legalMatters/$(resource.data.matterId)).data.lawyerId == request.auth.uid);
+    }
+    
+    // Anonymous chats - backend only, deny all client access
+    match /anonymousChats/{chatId} {
+      allow read, write: if false;
+    }
+    
+    // Anonymous messages - backend only, deny all client access
+    match /anonymousMessages/{messageId} {
+      allow read, write: if false;
+    }
+    
+    // Grievances collection
+    match /grievances/{grievanceId} {
+      // Create if authenticated
+      allow create: if isAuthenticated();
+      
+      // Read if owner or admin
+      allow read: if isAuthenticated() && 
+                     (resource.data.ownerUserId == request.auth.uid || 
+                      isAdmin());
+    }
+    
+  }
+}

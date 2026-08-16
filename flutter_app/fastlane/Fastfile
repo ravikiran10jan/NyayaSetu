@@ -1,0 +1,114 @@
+default_platform(:ios)
+
+platform :ios do
+
+  # ── Build + upload to TestFlight (one command: fastlane beta) ──────────────
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    setup_ci if ENV["CI"]
+
+    # Make sure certificates and provisioning profiles are valid
+    sync_code_signing(
+      type: "appstore",
+      app_identifier: "com.ravikiran.nyayasetu",
+      readonly: false
+    )
+
+    # Build Flutter first
+    sh("cd .. && flutter build ios --release --no-codesign")
+
+    # Build the Xcode archive
+    build_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "./build/ios",
+      output_name: "NyayaSetu.ipa",
+      clean: true
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      apple_id: "ravikiranmentorites@gmail.com",
+      skip_waiting_for_build_processing: true,
+      changelog: "NyayaSetu - Legal consultation platform for India"
+    )
+
+    notify_success("TestFlight upload complete!")
+  end
+
+  # ── Full App Store release (fastlane release) ──────────────────────────────
+  desc "Build, upload and submit to App Store review"
+  lane :release do
+    setup_ci if ENV["CI"]
+
+    sync_code_signing(
+      type: "appstore",
+      app_identifier: "com.ravikiran.nyayasetu",
+      readonly: false
+    )
+
+    sh("cd .. && flutter build ios --release --no-codesign")
+
+    build_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "./build/ios",
+      output_name: "NyayaSetu.ipa",
+      clean: true
+    )
+
+    upload_to_app_store(
+      apple_id: "ravikiranmentorites@gmail.com",
+      app_identifier: "com.ravikiran.nyayasetu",
+      skip_screenshots: true,
+      skip_metadata: false,
+      metadata_path: "./fastlane/metadata",
+      submit_for_review: true,
+      automatic_release: false,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false,
+        content_rights_has_rights: true,
+        content_rights_contains_third_party_content: false
+      }
+    )
+
+    notify_success("Submitted to App Store review!")
+  end
+
+  # ── Create app on App Store Connect (run once: fastlane create_app) ────────
+  desc "Create the app on App Store Connect and Dev Portal"
+  lane :create_app do
+    produce(
+      username: "ravikiranmentorites@gmail.com",
+      app_identifier: "com.ravikiran.nyayasetu",
+      app_name: "NyayaSetu",
+      language: "English",
+      app_version: "1.0.0",
+      sku: "nyayasetu001",
+      team_name: "Ravi Kiran",
+      itc_team_name: "Ravi Kiran",
+      enable_services: {}
+    )
+  end
+
+  # ── Register device UDIDs for testing ─────────────────────────────────────
+  desc "Register a new test device"
+  lane :add_device do
+    device_name = prompt(text: "Device name: ")
+    device_udid = prompt(text: "Device UDID: ")
+    register_devices(devices: { device_name => device_udid })
+    sync_code_signing(type: "development", force_for_new_devices: true)
+  end
+
+  private_lane :notify_success do |message|
+    puts ""
+    puts "✅ #{message}"
+    puts ""
+  end
+
+end

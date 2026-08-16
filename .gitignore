@@ -1,0 +1,50 @@
+# Dependencies
+**/node_modules/
+**/.dart_tool/
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/build/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+**/target/
+**/dist/
+**/*.jar
+**/*.class
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Firebase (NEVER commit credentials)
+**/firebase-service-account.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Flutter
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/coverage/
+
+# Maven
+**/*.log
+**/hs_err_pid*
+
+# Test outputs
+**/test-results/
+**/.gradle/
