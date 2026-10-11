@@ -20,6 +20,10 @@ public class Lawyer {
     private Long reviewedAt;
     private Long createdAt;
     private Long updatedAt;
+    private Double rating;
+    private Integer yearsOfExperience;
+    private Double pricePerMinute;
+    private Boolean isAvailable;
 
     public Lawyer() {}
 
@@ -44,6 +48,14 @@ public class Lawyer {
         this.createdAt = ca instanceof Number ? ((Number) ca).longValue() : null;
         Object ua = map.get("updatedAt");
         this.updatedAt = ua instanceof Number ? ((Number) ua).longValue() : null;
+        Object rt = map.get("rating");
+        this.rating = rt instanceof Number ? ((Number) rt).doubleValue() : null;
+        Object ye = map.get("yearsOfExperience");
+        this.yearsOfExperience = ye instanceof Number ? ((Number) ye).intValue() : null;
+        Object pp = map.get("pricePerMinute");
+        this.pricePerMinute = pp instanceof Number ? ((Number) pp).doubleValue() : null;
+        Object av = map.get("isAvailable");
+        this.isAvailable = av instanceof Boolean ? (Boolean) av : null;
     }
 
     public Map<String, Object> toMap() {
@@ -62,8 +74,12 @@ public class Lawyer {
             Map.entry("status", status),
             Map.entry("reviewedBy", reviewedBy != null ? reviewedBy : ""),
             Map.entry("reviewedAt", reviewedAt != null ? reviewedAt : 0L),
-            Map.entry("createdAt", createdAt),
-            Map.entry("updatedAt", updatedAt)
+            Map.entry("createdAt", createdAt != null ? createdAt : 0L),
+            Map.entry("updatedAt", updatedAt != null ? updatedAt : 0L),
+            Map.entry("rating", rating != null ? rating : 0.0),
+            Map.entry("yearsOfExperience", yearsOfExperience != null ? yearsOfExperience : 0),
+            Map.entry("pricePerMinute", pricePerMinute != null ? pricePerMinute : 0.0),
+            Map.entry("isAvailable", isAvailable != null ? isAvailable : true)
         );
     }
 
@@ -100,4 +116,12 @@ public class Lawyer {
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
     public Long getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Long updatedAt) { this.updatedAt = updatedAt; }
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
+    public Integer getYearsOfExperience() { return yearsOfExperience; }
+    public void setYearsOfExperience(Integer yearsOfExperience) { this.yearsOfExperience = yearsOfExperience; }
+    public Double getPricePerMinute() { return pricePerMinute; }
+    public void setPricePerMinute(Double pricePerMinute) { this.pricePerMinute = pricePerMinute; }
+    public Boolean getIsAvailable() { return isAvailable; }
+    public void setIsAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; }
 }

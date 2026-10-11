@@ -38,7 +38,7 @@ public class LawyerRepository {
     public Lawyer findById(String id) throws ExecutionException, InterruptedException {
         DocumentSnapshot snapshot = firestore.collection(COLLECTION).document(id).get().get();
         if (snapshot.exists()) {
-            return new Lawyer(snapshot.getData());
+            return fromDocument(snapshot);
         }
         return null;
     }
@@ -47,7 +47,7 @@ public class LawyerRepository {
         ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION).get();
         List<Lawyer> lawyers = new ArrayList<>();
         for (DocumentSnapshot document : future.get().getDocuments()) {
-            lawyers.add(new Lawyer(document.getData()));
+            lawyers.add(fromDocument(document));
         }
         return lawyers;
     }
@@ -58,7 +58,7 @@ public class LawyerRepository {
                 .get();
         List<Lawyer> lawyers = new ArrayList<>();
         for (DocumentSnapshot document : future.get().getDocuments()) {
-            lawyers.add(new Lawyer(document.getData()));
+            lawyers.add(fromDocument(document));
         }
         return lawyers;
     }
@@ -71,7 +71,7 @@ public class LawyerRepository {
                 .get();
         List<Lawyer> lawyers = new ArrayList<>();
         for (DocumentSnapshot document : future.get().getDocuments()) {
-            lawyers.add(new Lawyer(document.getData()));
+            lawyers.add(fromDocument(document));
         }
         return lawyers;
     }
@@ -84,9 +84,15 @@ public class LawyerRepository {
                 .get();
         List<Lawyer> lawyers = new ArrayList<>();
         for (DocumentSnapshot document : future.get().getDocuments()) {
-            lawyers.add(new Lawyer(document.getData()));
+            lawyers.add(fromDocument(document));
         }
         return lawyers;
+    }
+
+    private Lawyer fromDocument(DocumentSnapshot document) {
+        Lawyer lawyer = new Lawyer(document.getData());
+        lawyer.setId(document.getId());
+        return lawyer;
     }
 
     public Lawyer update(Lawyer lawyer) throws ExecutionException, InterruptedException {

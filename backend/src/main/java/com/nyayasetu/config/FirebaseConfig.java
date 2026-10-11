@@ -23,13 +23,23 @@ public class FirebaseConfig {
     @PostConstruct
     public void initialize() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {
-            FileInputStream serviceAccount = new FileInputStream(firebaseCredentialsPath);
-            
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
-            FirebaseApp.initializeApp(options);
+            FirebaseOptions.Builder builder = FirebaseOptions.builder();
+            if (firebaseCredentialsPath != null && !firebaseCredentialsPath.isEmpty()
+                    && java.nio.file.Files.exists(java.nio.file.Paths.get(firebaseCredentialsPath))) {
+                try (FileInputStream serviceAccount = new FileInputStream(firebaseCredentialsPath)) {
+                    builder.setCredentials(GoogleCredentials.fromStream(serviceAccount));
+                }
+            } else {
+                // Cloud Run: no key file baked in - use the runtime service account
+                // via Application Default Credentials (metadata server).
+                builder.setCredentials(GoogleCredentials.getApplicationDefault());
+            }
+            String projectId = System.getenv("GOOGLE_CLOUD_PROJECT");
+            if (projectId == null || projectId.isEmpty()) {
+                projectId = "nyayasetu-ravi";
+            }
+            builder.setProjectId(projectId);
+            FirebaseApp.initializeApp(builder.build());
         }
     }
 
