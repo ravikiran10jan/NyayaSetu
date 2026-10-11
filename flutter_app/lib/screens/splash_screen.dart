@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
+import '../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,7 +22,24 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToNextScreen() async {
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
-      context.go('/login');
+      final authProvider = context.read<AuthProvider>();
+      // Wait for auth to be initialized before deciding where to navigate
+      if (!authProvider.isInitialized) {
+        await Future.doWhile(() async {
+          await Future.delayed(const Duration(milliseconds: 100));
+          return mounted && !context.read<AuthProvider>().isInitialized;
+        });
+        if (!mounted) return;
+      }
+      if (authProvider.isAuthenticated) {
+        if (authProvider.userRole == 'advocate') {
+          context.go('/advocate/dashboard');
+        } else {
+          context.go('/home');
+        }
+      } else {
+        context.go('/login');
+      }
     }
   }
 

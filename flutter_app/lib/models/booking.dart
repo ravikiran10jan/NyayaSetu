@@ -21,17 +21,29 @@ class Booking {
     required this.createdAt,
   });
 
+  static DateTime _parseDate(dynamic v) {
+    if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+    if (v is num) return DateTime.fromMillisecondsSinceEpoch(v.toInt());
+    if (v is String && v.isNotEmpty) {
+      final parsed = DateTime.tryParse(v);
+      if (parsed != null) return parsed;
+      final asInt = int.tryParse(v);
+      if (asInt != null) return DateTime.fromMillisecondsSinceEpoch(asInt);
+    }
+    return DateTime.now();
+  }
+
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
       id: json['id']?.toString() ?? '',
-      advocateId: json['advocateId'] ?? '',
-      advocateName: json['advocateName'] ?? '',
-      clientId: json['clientId'] ?? '',
+      advocateId: json['advocateId'] ?? json['lawyerId'] ?? '',
+      advocateName: json['advocateName'] ?? json['practiceArea'] ?? 'Advocate',
+      clientId: json['clientId'] ?? json['clientUserId'] ?? '',
       mode: json['mode'] ?? 'chat',
-      scheduledStartsAt: DateTime.tryParse(json['scheduledStartsAt'] ?? '') ?? DateTime.now(),
+      scheduledStartsAt: _parseDate(json['scheduledStartsAt']),
       status: json['status'] ?? 'requested',
       clientNote: json['clientNote'],
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: _parseDate(json['createdAt']),
     );
   }
 

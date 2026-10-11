@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../core/theme.dart';
 
 class AppScaffold extends StatelessWidget {
@@ -16,16 +17,16 @@ class AppScaffold extends StatelessWidget {
   void _onItemTapped(BuildContext context, int index) {
     switch (index) {
       case 0:
-        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        context.go('/home');
         break;
       case 1:
-        Navigator.pushNamedAndRemoveUntil(context, '/advocates', (route) => false);
+        context.go('/advocates');
         break;
       case 2:
-        Navigator.pushNamedAndRemoveUntil(context, '/consultations', (route) => false);
+        context.go('/consultations');
         break;
       case 3:
-        Navigator.pushNamedAndRemoveUntil(context, '/workspace', (route) => false);
+        context.go('/workspace');
         break;
     }
   }

@@ -38,11 +38,20 @@ class Advocate {
   }
 
   factory Advocate.fromJson(Map<String, dynamic> json) {
+    // Backend (Lawyer entity) uses practiceAreas/barCouncil/status naming;
+    // map them onto the fields this app's UI expects.
+    final practiceAreas = (json['practiceAreas'] as List<dynamic>?)
+        ?.map((e) => e.toString())
+        .toList();
+    final status = json['status']?.toString().toLowerCase();
     return Advocate(
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      practiceArea: json['practiceArea'] ?? '',
+      practiceArea: json['practiceArea'] ??
+          (practiceAreas != null && practiceAreas.isNotEmpty
+              ? practiceAreas.join(', ')
+              : ''),
       rating: (json['rating'] ?? 0).toDouble(),
       yearsOfExperience: json['yearsOfExperience'] ?? 0,
       pricePerMinute: (json['pricePerMinute'] ?? 0).toDouble(),
@@ -51,10 +60,10 @@ class Advocate {
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      barCouncilId: json['barCouncilId'],
+      barCouncilId: json['barCouncilId'] ?? json['barCouncil'],
       jurisdictionState: json['jurisdictionState'],
       city: json['city'],
-      isVerified: json['isVerified'] ?? false,
+      isVerified: json['isVerified'] ?? (status == 'active'),
     );
   }
 

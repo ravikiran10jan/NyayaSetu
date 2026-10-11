@@ -49,6 +49,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.signInWithGoogle();
+
+    if (mounted) {
+      if (authProvider.isAuthenticated) {
+        if (authProvider.userRole == 'advocate') {
+          context.go('/advocate/dashboard');
+        } else {
+          context.go('/home');
+        }
+      } else if (authProvider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authProvider.error!)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -135,12 +154,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: const Text('Don\'t have an account? Register'),
                 ),
                 const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('OR'),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Google sign-in coming soon')),
-                    );
-                  },
+                  onPressed: authProvider.isLoading ? null : _signInWithGoogle,
                   icon: const Icon(Icons.login),
                   label: const Text('Sign in with Google'),
                 ),

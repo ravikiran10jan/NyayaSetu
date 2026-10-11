@@ -25,7 +25,20 @@ class LegalMatter {
     required this.createdAt,
   });
 
+  static DateTime _parseDate(dynamic v) {
+    if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+    if (v is num) return DateTime.fromMillisecondsSinceEpoch(v.toInt());
+    if (v is String && v.isNotEmpty) {
+      final parsed = DateTime.tryParse(v);
+      if (parsed != null) return parsed;
+      final asInt = int.tryParse(v);
+      if (asInt != null) return DateTime.fromMillisecondsSinceEpoch(asInt);
+    }
+    return DateTime.now();
+  }
+
   factory LegalMatter.fromJson(Map<String, dynamic> json) {
+    final conflictStatus = json['conflictStatus'];
     return LegalMatter(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
@@ -35,9 +48,10 @@ class LegalMatter {
       urgency: json['urgency'] ?? 'medium',
       cnrNumber: json['cnrNumber'],
       status: json['status'] ?? 'active',
-      hasConflict: json['hasConflict'] ?? false,
-      clientId: json['clientId'] ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      hasConflict: json['hasConflict'] == true ||
+          (conflictStatus is String && conflictStatus.toLowerCase() != 'none' && conflictStatus.isNotEmpty),
+      clientId: json['clientId'] ?? json['ownerUserId'] ?? '',
+      createdAt: _parseDate(json['createdAt']),
     );
   }
 

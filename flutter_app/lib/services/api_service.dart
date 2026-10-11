@@ -21,6 +21,27 @@ class ApiService {
     };
   }
 
+  /// Backend wraps all responses in {success, message, data}.
+  /// Unwrap the [data] field; accepts either the envelope or a raw list.
+  List<dynamic> _unwrapList(String body) {
+    final decoded = json.decode(body);
+    if (decoded is Map<String, dynamic> && decoded.containsKey('data')) {
+      return (decoded['data'] as List<dynamic>?) ?? [];
+    }
+    return decoded as List<dynamic>;
+  }
+
+  /// Unwrap a single object from the envelope.
+  Map<String, dynamic> _unwrapMap(String body) {
+    final decoded = json.decode(body);
+    if (decoded is Map<String, dynamic> && decoded.containsKey('data')) {
+      final data = decoded['data'];
+      if (data is Map<String, dynamic>) return data;
+      return <String, dynamic>{};
+    }
+    return decoded as Map<String, dynamic>;
+  }
+
   // Advocates
   Future<List<Advocate>> getAdvocates({
     String? practiceArea,
@@ -44,8 +65,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Advocate.fromJson(json)).toList();
+      final data = _unwrapList(response.body);
+      return data.map((j) => Advocate.fromJson(j as Map<String, dynamic>)).toList();
     }
     throw Exception('Failed to load advocates');
   }
@@ -73,7 +94,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return Booking.fromJson(json.decode(response.body));
+      return Booking.fromJson(_unwrapMap(response.body));
     }
     throw Exception('Failed to create booking');
   }
@@ -85,8 +106,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Booking.fromJson(json)).toList();
+      final data = _unwrapList(response.body);
+      return data.map((j) => Booking.fromJson(j as Map<String, dynamic>)).toList();
     }
     throw Exception('Failed to load bookings');
   }
@@ -102,7 +123,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return Booking.fromJson(json.decode(response.body));
+      return Booking.fromJson(_unwrapMap(response.body));
     }
     throw Exception('Failed to update booking status');
   }
@@ -130,7 +151,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return LegalMatter.fromJson(json.decode(response.body));
+      return LegalMatter.fromJson(_unwrapMap(response.body));
     }
     throw Exception('Failed to create matter');
   }
@@ -142,8 +163,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      return data.map((json) => LegalMatter.fromJson(json)).toList();
+      final data = _unwrapList(response.body);
+      return data.map((j) => LegalMatter.fromJson(j as Map<String, dynamic>)).toList();
     }
     throw Exception('Failed to load matters');
   }
@@ -163,7 +184,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return LegalMatter.fromJson(json.decode(response.body));
+      return LegalMatter.fromJson(_unwrapMap(response.body));
     }
     throw Exception('Failed to update matter');
   }
@@ -189,7 +210,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return MatterRecord.fromJson(json.decode(response.body));
+      return MatterRecord.fromJson(_unwrapMap(response.body));
     }
     throw Exception('Failed to create matter record');
   }
@@ -201,8 +222,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      return data.map((json) => MatterRecord.fromJson(json)).toList();
+      final data = _unwrapList(response.body);
+      return data.map((j) => MatterRecord.fromJson(j as Map<String, dynamic>)).toList();
     }
     throw Exception('Failed to load matter records');
   }

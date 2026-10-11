@@ -162,7 +162,6 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               const SizedBox(height: 12),
               ToggleButtons(
-                selectedIndex: _mode == 'chat' ? 0 : 1,
                 onPressed: (index) {
                   setState(() {
                     _mode = index == 0 ? 'chat' : 'call';

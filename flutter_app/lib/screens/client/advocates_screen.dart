@@ -152,8 +152,8 @@ class _AdvocatesScreenState extends State<AdvocatesScreen> {
         final advocate = advocates[index];
         return AdvocateCard(
           advocate: advocate,
-          onChat: () => context.go('/booking/${advocate.id}?mode=chat'),
-          onCall: () => context.go('/booking/${advocate.id}?mode=call'),
+          onChat: () => context.go('/booking/${advocate.id}?mode=chat&name=${Uri.encodeComponent(advocate.name)}'),
+          onCall: () => context.go('/booking/${advocate.id}?mode=call&name=${Uri.encodeComponent(advocate.name)}'),
         );
       },
     );

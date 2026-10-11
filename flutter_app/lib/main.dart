@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/advocates_provider.dart';
 import 'providers/bookings_provider.dart';
@@ -21,11 +23,15 @@ import 'screens/advocate/advocate_profile_screen.dart';
 import 'screens/lawyer_application_screen.dart';
 import 'screens/privacy_center_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()..initAuth()),
         ChangeNotifierProvider(create: (_) => AdvocatesProvider()),
         ChangeNotifierProvider(create: (_) => BookingsProvider()),
         ChangeNotifierProvider(create: (_) => MattersProvider()),
@@ -35,21 +41,10 @@ void main() {
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'NyayaSetu',
-      theme: AppTheme.lightTheme,
-      routerConfig: _router,
-      debugShowCheckedModeBanner: false,
-    );
-  }
-
-  final GoRouter _router = GoRouter(
+GoRouter _createRouter(AuthProvider authProvider) {
+  return GoRouter(
     initialLocation: '/',
+    refreshListenable: authProvider,
     routes: [
       GoRoute(
         path: '/',
@@ -76,9 +71,10 @@ class MyApp extends StatelessWidget {
         builder: (context, state) {
           final advocateId = state.pathParameters['advocateId']!;
           final mode = state.uri.queryParameters['mode'] ?? 'chat';
+          final advocateName = state.uri.queryParameters['name'] ?? 'Advocate';
           return BookingScreen(
             advocateId: advocateId,
-            advocateName: 'Advocate', // Will be fetched from provider
+            advocateName: advocateName,
             initialMode: mode,
           );
         },
@@ -126,7 +122,7 @@ class MyApp extends StatelessWidget {
 
       // Public routes that don't require authentication
       final publicRoutes = ['/login', '/register', '/anonymous', '/lawyer-application'];
-      
+
       if (publicRoutes.contains(currentPath)) {
         return null;
       }
@@ -137,7 +133,7 @@ class MyApp extends StatelessWidget {
       }
 
       // If authenticated and on login/register, redirect based on role
-      if (isAuthenticated && (currentPath == '/login' || currentPath == '/register')) {
+      if (isAuthenticated && (currentPath == '/login' || currentPath == '/register' || currentPath == '/')) {
         if (authProvider.userRole == 'advocate') {
           return '/advocate/dashboard';
         }
@@ -147,4 +143,21 @@ class MyApp extends StatelessWidget {
       return null;
     },
   );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final router = _createRouter(authProvider);
+
+    return MaterialApp.router(
+      title: 'NyayaSetu',
+      theme: AppTheme.lightTheme,
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
+    );
+  }
 }

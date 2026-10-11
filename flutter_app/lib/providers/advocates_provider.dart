@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/advocate.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
 
 class AdvocatesProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService(AuthService());
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<Advocate> _advocates = [];
   bool _isLoading = false;
@@ -47,7 +46,17 @@ class AdvocatesProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _advocates = await _apiService.getAdvocates();
+      final snapshot = await _firestore
+          .collection('lawyers')
+          .where('status', isEqualTo: 'active')
+          .get();
+
+      _advocates = snapshot.docs
+          .map((doc) => Advocate.fromJson({
+                ...doc.data(),
+                'id': doc.id,
+              }))
+          .toList();
     } catch (e) {
       _error = e.toString();
     } finally {

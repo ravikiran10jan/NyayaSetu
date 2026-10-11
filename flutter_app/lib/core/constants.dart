@@ -2,8 +2,11 @@ class AppConstants {
   static const String appName = 'NyayaSetu';
   static const String tagline = 'Nyay ka Setu — The Bridge to Justice';
 
-  // TODO: Replace with your actual Spring Boot backend URL
-  static const String apiBaseUrl = 'http://localhost:8080/api';
+  // Backend URL (Cloud Run)
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://nyayasetu-backend-547102415125.us-central1.run.app/api',
+  );
 
   static const List<String> practiceAreas = [
     'Family Law',

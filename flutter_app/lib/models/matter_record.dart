@@ -24,7 +24,9 @@ class MatterRecord {
       type: json['type'] ?? 'note',
       title: json['title'] ?? '',
       description: json['description'],
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: json['createdAt'] is int
+          ? DateTime.fromMillisecondsSinceEpoch(json['createdAt'] as int)
+          : (DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now()),
       createdBy: json['createdBy'] ?? '',
     );
   }
